@@ -5,7 +5,7 @@ use spacetimedb_schema::reducer_name::ReducerName;
 use tokio::sync::mpsc;
 use tokio::time::MissedTickBehavior;
 
-use crate::subscription::ExecutionCounters;
+use crate::metrics::ExecutionCounters;
 use spacetimedb_datastore::execution_context::WorkloadType;
 use spacetimedb_datastore::{locking_tx_datastore::datastore::TxMetrics, traits::TxData};
 

@@ -14,6 +14,7 @@ members = [
   "crates/data-structures",
   "crates/datastore",
   "crates/durability",
+  "crates/engine",
   "crates/execution",
   "crates/expr",
   "crates/guard",
@@ -129,6 +130,7 @@ spacetimedb-core = { path = "crates/core", version = "=2.2.0" }
 spacetimedb-data-structures = { path = "crates/data-structures", version = "=2.2.0" }
 spacetimedb-datastore = { path = "crates/datastore", version = "=2.2.0" }
 spacetimedb-durability = { path = "crates/durability", version = "=2.2.0" }
+spacetimedb-engine = { path = "crates/engine", version = "=2.2.0" }
 spacetimedb-execution = { path = "crates/execution", version = "=2.2.0" }
 spacetimedb-expr = { path = "crates/expr", version = "=2.2.0" }
 spacetimedb-guard = { path = "crates/guard", version = "=2.2.0" }

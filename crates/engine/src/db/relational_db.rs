@@ -1,9 +1,9 @@
 use crate::db::durability::{request_durability, spawn_close as spawn_durability_close};
 use crate::db::MetricsRecorderQueue;
 use crate::error::{DBError, RestoreSnapshotError};
-use crate::subscription::ExecutionCounters;
+use crate::metrics::ExecutionCounters;
+use crate::metrics::ENGINE_METRICS;
 use crate::util::asyncify;
-use crate::worker_metrics::WORKER_METRICS;
 use anyhow::{anyhow, Context};
 use enum_map::EnumMap;
 use log::info;
@@ -302,7 +302,7 @@ impl RelationalDB {
         apply_history(&inner, database_identity, history)?;
 
         let elapsed_time = start_time.elapsed();
-        WORKER_METRICS
+        ENGINE_METRICS
             .replay_total_time_seconds
             .with_label_values(&database_identity)
             .set(elapsed_time.as_secs_f64());
@@ -494,7 +494,7 @@ impl RelationalDB {
 
             let elapsed_time = start.elapsed();
 
-            WORKER_METRICS
+            ENGINE_METRICS
                 .replay_snapshot_read_time_seconds
                 .with_label_values(database_identity)
                 .set(elapsed_time.as_secs_f64());
@@ -518,7 +518,7 @@ impl RelationalDB {
                 .inspect(|_| {
                     let elapsed_time = start.elapsed();
 
-                    WORKER_METRICS.replay_snapshot_restore_time_seconds.with_label_values(database_identity).set(elapsed_time.as_secs_f64());
+                    ENGINE_METRICS.replay_snapshot_restore_time_seconds.with_label_values(database_identity).set(elapsed_time.as_secs_f64());
 
                     log::info!(
                         "[{database_identity}] DATABASE: restored from snapshot of tx_offset {snapshot_offset} in {elapsed_time:?}",
@@ -1049,7 +1049,7 @@ impl RelationalDB {
     /// Reports the `TxMetrics`s passed.
     ///
     /// Should only be called after the tx lock has been fully released.
-    pub(crate) fn report_tx_metrics(
+    pub fn report_tx_metrics(
         &self,
         reducer: Option<ReducerName>,
         tx_data: Option<Arc<TxData>>,
@@ -1529,7 +1529,7 @@ impl RelationalDB {
     }
 
     /// Read the value of [ST_VARNAME_ROW_LIMIT] from `st_var`
-    pub(crate) fn row_limit(&self, tx: &Tx) -> Result<Option<u64>, DBError> {
+    pub fn row_limit(&self, tx: &Tx) -> Result<Option<u64>, DBError> {
         let data = self.read_var(tx, StVarName::RowLimit);
 
         if let Some(StVarValue::U64(limit)) = data? {
@@ -1650,10 +1650,10 @@ fn apply_history(
     history: impl durability::History<TxData = Txdata>,
 ) -> Result<(), DBError> {
     let counters = ApplyHistoryCounters {
-        replay_commitlog_time_seconds: WORKER_METRICS
+        replay_commitlog_time_seconds: ENGINE_METRICS
             .replay_commitlog_time_seconds
             .with_label_values(&database_identity),
-        replay_commitlog_num_commits: WORKER_METRICS
+        replay_commitlog_num_commits: ENGINE_METRICS
             .replay_commitlog_num_commits
             .with_label_values(&database_identity),
     };
@@ -1794,13 +1794,13 @@ fn default_row_count_fn(db: Identity) -> RowCountFn {
 pub mod tests_utils {
     use crate::db::snapshot;
     use crate::db::snapshot::SnapshotWorker;
-    use crate::messages::control_db::HostType;
 
     use super::*;
     use core::ops::Deref;
     use durability::{Durability, EmptyHistory};
     use spacetimedb_datastore::locking_tx_datastore::MutTxId;
     use spacetimedb_datastore::locking_tx_datastore::TxId;
+    use spacetimedb_datastore::system_tables::ModuleKind;
     use spacetimedb_fs_utils::compression::CompressType;
     use spacetimedb_lib::{bsatn::to_vec, ser::Serialize};
     use spacetimedb_paths::server::ReplicaDir;
@@ -2115,7 +2115,7 @@ pub mod tests_utils {
             assert_eq!(connected_clients.len(), expected_num_clients);
             let db = db.with_row_count(Self::row_count_fn());
             db.with_auto_commit(Workload::Internal, |tx| {
-                db.set_initialized(tx, Program::empty(HostType::Wasm.into()))
+                db.set_initialized(tx, Program::empty(ModuleKind::WASM))
             })?;
             Ok(db)
         }

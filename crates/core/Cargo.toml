@@ -22,6 +22,7 @@ spacetimedb-client-api-messages.workspace = true
 spacetimedb-commitlog.workspace = true
 spacetimedb-datastore.workspace = true
 spacetimedb-durability.workspace = true
+spacetimedb-engine.workspace = true
 spacetimedb-memory-usage.workspace = true
 spacetimedb-metrics.workspace = true
 spacetimedb-primitives.workspace = true
@@ -144,7 +145,7 @@ allow_loopback_http_for_tests = []
 # Enable timing for wasm ABI calls
 spacetimedb-wasm-instance-env-times = []
 # Enable test helpers and utils
-test = ["spacetimedb-commitlog/test", "spacetimedb-datastore/test"]
+test = ["spacetimedb-commitlog/test", "spacetimedb-datastore/test", "spacetimedb-engine/test"]
 # Perfmaps for profiling modules
 perfmap = []
 # Enables core pinning.

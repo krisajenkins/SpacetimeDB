@@ -1,6 +1,5 @@
 use super::relational_db::RelationalDB;
-use crate::database_logger::SystemLogger;
-use crate::sql::parser::RowLevelExpr;
+use crate::rls::RowLevelExpr;
 use spacetimedb_datastore::locking_tx_datastore::MutTxId;
 use spacetimedb_lib::db::auth::StTableType;
 use spacetimedb_lib::identity::AuthCtx;
@@ -13,12 +12,6 @@ use spacetimedb_schema::schema::{column_schemas_from_defs, IndexSchema, Schema, 
 /// The logger used for by [`update_database`] and friends.
 pub trait UpdateLogger {
     fn info(&self, msg: &str);
-}
-
-impl UpdateLogger for SystemLogger {
-    fn info(&self, msg: &str) {
-        self.info(msg);
-    }
 }
 
 /// The result of a database update.

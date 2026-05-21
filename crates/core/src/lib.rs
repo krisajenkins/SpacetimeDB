@@ -4,7 +4,7 @@ pub mod energy;
 pub mod sql;
 
 pub mod auth;
-pub mod db;
+pub use spacetimedb_engine::db;
 pub mod messages;
 pub use spacetimedb_lib::Identity;
 pub mod error;

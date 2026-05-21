@@ -6,7 +6,8 @@ use spacetimedb_durability::{DurabilityExited, TxOffset};
 use spacetimedb_paths::server::ServerDataDir;
 use spacetimedb_snapshot::DynSnapshotRepo;
 
-use crate::{messages::control_db::Database, util::asyncify};
+use crate::util::asyncify;
+use spacetimedb_lib::Identity;
 use spacetimedb_runtime::Handle;
 
 use super::{
@@ -118,13 +119,13 @@ impl Persistence {
 /// A persistence provider is a "factory" of sorts that can produce [Persistence]
 /// services for a given replica.
 ///
-/// The [crate::host::HostController] uses this to obtain [Persistence]s from
+/// The host controller uses this to obtain [Persistence]s from
 /// an external source, and construct [relational_db::RelationalDB]s with it.
 ///
 /// This is an `async_trait` to allow it to be used as a trait object.
 #[async_trait]
 pub trait PersistenceProvider: Send + Sync {
-    async fn persistence(&self, database: &Database, replica_id: u64) -> anyhow::Result<Persistence>;
+    async fn persistence(&self, database_identity: Identity, replica_id: u64) -> anyhow::Result<Persistence>;
 }
 
 /// The standard [PersistenceProvider] for non-replicated databases.
@@ -150,12 +151,11 @@ impl LocalPersistenceProvider {
 
 #[async_trait]
 impl PersistenceProvider for LocalPersistenceProvider {
-    async fn persistence(&self, database: &Database, replica_id: u64) -> anyhow::Result<Persistence> {
+    async fn persistence(&self, database_identity: Identity, replica_id: u64) -> anyhow::Result<Persistence> {
         let replica_dir = self.data_dir.replica(replica_id);
         let snapshot_dir = replica_dir.snapshots();
         let runtime = Handle::tokio_current();
 
-        let database_identity = database.database_identity;
         let snapshot_worker =
             asyncify(move || relational_db::open_snapshot_repo(snapshot_dir, database_identity, replica_id))
                 .await

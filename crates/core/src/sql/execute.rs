@@ -163,7 +163,7 @@ fn run_inner<I: WasmInstance>(
             if let ViewOutcome::Failed(err) = result.outcome {
                 let (_, metrics, reducer) = db.rollback_mut_tx(result.tx);
                 db.report_mut_tx_metrics(reducer, metrics, None);
-                return Err(DBError::View(ViewCallError::InternalError(err)));
+                return Err(anyhow::Error::new(ViewCallError::InternalError(err)).into());
             }
 
             let tx = result.tx;
