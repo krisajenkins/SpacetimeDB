@@ -73,10 +73,23 @@ const spacetime = schema({
 
 const arrayRetValue = t.array(person.rowType);
 const optionalPerson = t.option(person.rowType);
+const multiplePrimaryKeyRows = t.array(
+  t.row('MultiplePrimaryKeyRows', {
+    id: t.u32().primaryKey(),
+    name: t.string().primaryKey(),
+  })
+);
 
 spacetime.anonymousView({ name: 'v1', public: true }, arrayRetValue, ctx => {
   return ctx.from.person.build();
 });
+
+// @ts-expect-error views can have at most one primaryKey column on the returned row type.
+spacetime.anonymousView(
+  { name: 'multiplePrimaryRows', public: true },
+  multiplePrimaryKeyRows,
+  () => []
+);
 
 spacetime.anonymousView(
   { name: 'optionalPerson', public: true },

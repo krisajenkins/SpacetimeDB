@@ -5758,6 +5758,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "procedural-view-pk-client"
+version = "2.3.0"
+dependencies = [
+ "anyhow",
+ "console_error_panic_hook",
+ "env_logger 0.10.2",
+ "spacetimedb-sdk",
+ "test-counter",
+ "tokio",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+]
+
+[[package]]
 name = "procedure-client"
 version = "2.3.0"
 dependencies = [
@@ -7150,6 +7164,13 @@ dependencies = [
  "anyhow",
  "log",
  "paste",
+ "spacetimedb 2.3.0",
+]
+
+[[package]]
+name = "sdk-test-procedural-view-pk"
+version = "0.1.0"
+dependencies = [
  "spacetimedb 2.3.0",
 ]
 
