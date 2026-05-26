@@ -211,10 +211,11 @@ impl PersistenceProvider for LocalPersistenceProvider {
         let snapshot_dir = replica_dir.snapshots();
         let runtime = Handle::tokio_current();
 
-        let snapshot_worker =
-            asyncify(&runtime, move || relational_db::open_snapshot_repo(snapshot_dir, database_identity, replica_id))
-                .await
-                .map(|repo| SnapshotWorker::new(repo, snapshot::Compression::Enabled, runtime.clone()))?;
+        let snapshot_worker = asyncify(&runtime, move || {
+            relational_db::open_snapshot_repo(snapshot_dir, database_identity, replica_id)
+        })
+        .await
+        .map(|repo| SnapshotWorker::new(repo, snapshot::Compression::Enabled, runtime.clone()))?;
         let (durability, disk_size) = relational_db::local_durability_with_options(
             replica_dir,
             runtime.clone(),

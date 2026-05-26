@@ -1720,7 +1720,10 @@ pub async fn local_durability_with_options(
 /// Open a [History] for replay from the local durable state.
 ///
 /// Currently, this is simply a read-only copy of the commitlog.
-pub async fn local_history(replica_dir: &ReplicaDir, runtime: &Handle) -> io::Result<impl History<TxData = Txdata> + use<>> {
+pub async fn local_history(
+    replica_dir: &ReplicaDir,
+    runtime: &Handle,
+) -> io::Result<impl History<TxData = Txdata> + use<>> {
     let commitlog_dir = replica_dir.commit_log();
     asyncify(runtime, move || Commitlog::open(commitlog_dir, <_>::default(), None)).await
 }

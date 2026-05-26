@@ -14,8 +14,8 @@ where
     let span = Span::current();
     runtime
         .spawn_blocking(move || {
-        let _enter = span.enter();
-        f()
-    })
-    .await
+            let _enter = span.enter();
+            f()
+        })
+        .await
 }
