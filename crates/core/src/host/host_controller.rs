@@ -901,7 +901,8 @@ impl Host {
             )?,
             db::Storage::Disk => {
                 // Replay from the local state.
-                let history = relational_db::local_history(&replica_dir).await?;
+                let runtime = spacetimedb_runtime::Handle::tokio_current();
+                let history = relational_db::local_history(&replica_dir, &runtime).await?;
                 let persistence = persistence.persistence(database.database_identity, replica_id).await?;
                 // Loading a database from persistent storage involves heavy
                 // blocking I/O. `asyncify` to avoid blocking the async worker.

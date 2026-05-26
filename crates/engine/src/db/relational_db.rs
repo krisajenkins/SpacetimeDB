@@ -1696,10 +1696,11 @@ pub async fn local_durability_with_options(
             snapshot_worker.request_snapshot_ignore_closed();
         }) as Arc<OnNewSegmentFn>
     });
-    let local = asyncify(move || {
+    let durability_runtime = runtime.clone();
+    let local = asyncify(&runtime, move || {
         durability::Local::open(
             replica_dir.clone(),
-            runtime,
+            durability_runtime,
             opts,
             // Give the durability a handle to request a new snapshot run,
             // which it will send down whenever we rotate commitlog segments.
@@ -1719,9 +1720,9 @@ pub async fn local_durability_with_options(
 /// Open a [History] for replay from the local durable state.
 ///
 /// Currently, this is simply a read-only copy of the commitlog.
-pub async fn local_history(replica_dir: &ReplicaDir) -> io::Result<impl History<TxData = Txdata> + use<>> {
+pub async fn local_history(replica_dir: &ReplicaDir, runtime: &Handle) -> io::Result<impl History<TxData = Txdata> + use<>> {
     let commitlog_dir = replica_dir.commit_log();
-    asyncify(move || Commitlog::open(commitlog_dir, <_>::default(), None)).await
+    asyncify(runtime, move || Commitlog::open(commitlog_dir, <_>::default(), None)).await
 }
 
 /// Watches snapshot creation events and compresses all commitlog segments older
@@ -1733,6 +1734,7 @@ pub async fn snapshot_watching_commitlog_compressor(
     mut clog_tx: Option<tokio::sync::mpsc::Sender<u64>>,
     mut snap_tx: Option<tokio::sync::mpsc::Sender<u64>>,
     durability: LocalDurability,
+    runtime: Handle,
 ) {
     let mut prev_snapshot_offset = *snapshot_rx.borrow_and_update();
     while snapshot_rx.changed().await.is_ok() {
@@ -1745,7 +1747,7 @@ pub async fn snapshot_watching_commitlog_compressor(
             tracing::warn!("failed to send offset {snapshot_offset} after snapshot creation: {err}");
         }
 
-        let res: io::Result<_> = asyncify(move || {
+        let res: io::Result<_> = asyncify(&runtime, move || {
             let segment_offsets = durability.existing_segment_offsets()?;
             let start_idx = segment_offsets
                 .binary_search(&prev_snapshot_offset)

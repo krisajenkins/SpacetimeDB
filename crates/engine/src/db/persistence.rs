@@ -110,15 +110,6 @@ impl Persistence {
         durability: impl spacetimedb_durability::Durability<TxData = Txdata> + 'static,
         disk_size: impl Fn() -> io::Result<SizeOnDisk> + Send + Sync + 'static,
         snapshots: Option<SnapshotWorker>,
-        runtime: tokio::runtime::Handle,
-    ) -> Self {
-        Self::new_with_runtime(durability, disk_size, snapshots, Handle::tokio(runtime))
-    }
-
-    pub fn new_with_runtime(
-        durability: impl spacetimedb_durability::Durability<TxData = Txdata> + 'static,
-        disk_size: impl Fn() -> io::Result<SizeOnDisk> + Send + Sync + 'static,
-        snapshots: Option<SnapshotWorker>,
         runtime: Handle,
     ) -> Self {
         Self {
@@ -221,7 +212,7 @@ impl PersistenceProvider for LocalPersistenceProvider {
         let runtime = Handle::tokio_current();
 
         let snapshot_worker =
-            asyncify(move || relational_db::open_snapshot_repo(snapshot_dir, database_identity, replica_id))
+            asyncify(&runtime, move || relational_db::open_snapshot_repo(snapshot_dir, database_identity, replica_id))
                 .await
                 .map(|repo| SnapshotWorker::new(repo, snapshot::Compression::Enabled, runtime.clone()))?;
         let (durability, disk_size) = relational_db::local_durability_with_options(
@@ -232,11 +223,12 @@ impl PersistenceProvider for LocalPersistenceProvider {
         )
         .await?;
 
-        tokio::spawn(relational_db::snapshot_watching_commitlog_compressor(
+        runtime.spawn(relational_db::snapshot_watching_commitlog_compressor(
             snapshot_worker.subscribe(),
             None,
             None,
             durability.clone(),
+            runtime.clone(),
         ));
 
         Ok(Persistence {
