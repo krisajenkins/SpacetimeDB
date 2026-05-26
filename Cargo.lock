@@ -8224,6 +8224,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "enum-map",
+ "env_logger 0.10.2",
  "fs_extra",
  "futures",
  "hex",
