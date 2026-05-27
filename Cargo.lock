@@ -8223,6 +8223,7 @@ version = "2.2.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "bytes",
  "enum-map",
  "env_logger 0.10.2",
  "fs_extra",
@@ -8232,6 +8233,7 @@ dependencies = [
  "log",
  "once_cell",
  "parking_lot 0.12.5",
+ "pretty_assertions",
  "prometheus",
  "serde",
  "sled",
