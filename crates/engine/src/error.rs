@@ -78,6 +78,24 @@ impl From<LockError> for DatabaseError {
 }
 
 #[derive(Error, Debug)]
+pub enum ViewError {
+    #[error("{0}")]
+    Args(String),
+    #[error("{0}")]
+    NoSuchModule(String),
+    #[error("no such view")]
+    NoSuchView,
+    #[error("Table does not exist for view `{0}`")]
+    TableDoesNotExist(ViewId),
+    #[error("missing client connection for view call trigged by subscription")]
+    MissingClientConnection,
+    #[error("DB error during view call: {0}")]
+    DatastoreError(#[from] DatastoreError),
+    #[error("The module instance encountered a fatal error: {0}")]
+    InternalError(String),
+}
+
+#[derive(Error, Debug)]
 pub enum DBError {
     #[error("LibError: {0}")]
     Lib(#[from] LibError),
@@ -135,6 +153,8 @@ pub enum DBError {
     RestoreSnapshot(#[from] RestoreSnapshotError),
     #[error(transparent)]
     DurabilityGone(#[from] DurabilityExited),
+    #[error(transparent)]
+    View(#[from] ViewError),
 }
 
 impl From<InvalidFieldError> for DBError {

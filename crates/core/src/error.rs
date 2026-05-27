@@ -10,7 +10,21 @@ use thiserror::Error;
 
 impl From<ViewCallError> for DBError {
     fn from(err: ViewCallError) -> Self {
-        anyhow::Error::new(err).into()
+        match err {
+            ViewCallError::Args(err) => spacetimedb_engine::error::ViewError::Args(err.to_string()).into(),
+            ViewCallError::NoSuchModule(err) => {
+                spacetimedb_engine::error::ViewError::NoSuchModule(err.to_string()).into()
+            }
+            ViewCallError::NoSuchView => spacetimedb_engine::error::ViewError::NoSuchView.into(),
+            ViewCallError::TableDoesNotExist(view_id) => {
+                spacetimedb_engine::error::ViewError::TableDoesNotExist(view_id).into()
+            }
+            ViewCallError::MissingClientConnection => {
+                spacetimedb_engine::error::ViewError::MissingClientConnection.into()
+            }
+            ViewCallError::DatastoreError(err) => spacetimedb_engine::error::ViewError::DatastoreError(err).into(),
+            ViewCallError::InternalError(err) => spacetimedb_engine::error::ViewError::InternalError(err).into(),
+        }
     }
 }
 

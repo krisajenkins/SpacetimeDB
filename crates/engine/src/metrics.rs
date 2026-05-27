@@ -38,6 +38,17 @@ metrics_group!(
         #[labels(db: Identity)]
         pub replay_commitlog_num_commits: IntGaugeVec,
 
+        // Snapshot creation should take in the order of milliseconds,
+        // but log data suggests that there are outliers.
+        // So let's track a wide range of buckets to get a better picture.
+        //
+        // We also track the timing without `asyncify` scheduling overhead
+        // (`snapshot_creation_time_inner`), and the snapshot compression
+        // timing with / without scheduling overhead (`snapshot_compression_time_total`
+        // and `snapshot_compression_time_inner`, respectively).
+        //
+        // Compression may have contributed to observed outliers, but is no
+        // longer included in the snapshot creation timing.
         #[name = spacetime_snapshot_creation_time_total_sec]
         #[help = "The time (in seconds) it took to take and store a database snapshot, including scheduling overhead"]
         #[labels(db: Identity)]

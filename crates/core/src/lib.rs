@@ -5,6 +5,7 @@ pub mod sql;
 
 pub mod auth;
 pub use spacetimedb_engine::db;
+pub use spacetimedb_engine::metrics;
 pub mod messages;
 pub use spacetimedb_lib::Identity;
 pub mod error;
