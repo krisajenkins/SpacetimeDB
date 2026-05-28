@@ -20,6 +20,7 @@ packages:
   - 'modules/sdk-test-connect-disconnect-ts'
   - 'modules/sdk-test-procedure-ts'
   - 'modules/sdk-test-procedural-view-pk-ts'
+  - 'modules/sdk-test-view-pk-ts'
   - 'modules/sdk-test-ts'
   - 'modules/sdk-test-case-conversion-ts'
   - 'docs'

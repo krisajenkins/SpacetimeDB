@@ -91,6 +91,15 @@ spacetime.anonymousView(
   () => []
 );
 
+// @ts-expect-error the same multiple-primary-key check also applies to query-builder views.
+spacetime.anonymousView(
+  { name: 'multiplePrimaryRowsQuery', public: true },
+  multiplePrimaryKeyRows,
+  ctx => {
+    return ctx.from.person;
+  }
+);
+
 spacetime.anonymousView(
   { name: 'optionalPerson', public: true },
   optionalPerson,
