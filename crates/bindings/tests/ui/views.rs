@@ -215,4 +215,20 @@ fn view_primary_key_uses_canonical_name(_: &ViewContext) -> Vec<CustomAccessorVi
     vec![]
 }
 
+#[derive(SpacetimeType)]
+struct NonFilterableViewPrimaryKey {
+    value: u32,
+}
+
+#[derive(SpacetimeType)]
+struct NonFilterableViewPrimaryKeyRow {
+    identity: NonFilterableViewPrimaryKey,
+}
+
+/// The declared view primary key column type must be filterable.
+#[view(accessor = view_primary_key_non_filterable_column, public, primary_key = identity)]
+fn view_primary_key_non_filterable_column(_: &ViewContext) -> Vec<NonFilterableViewPrimaryKeyRow> {
+    vec![]
+}
+
 fn main() {}

@@ -293,7 +293,8 @@ pub(crate) fn view_impl(args: ViewArgs, original_function: &ItemFn) -> syn::Resu
             quote! {
                 const _: () = {
                     fn _assert_view_primary_key_column #lt_params (__row: &#row_ty) #lt_where_clause {
-                        let _ = &__row.#primary_key;
+                        fn _assert_view_primary_key_column_type<T: spacetimedb::ViewPrimaryKeyColumn>(_: &T) {}
+                        _assert_view_primary_key_column_type(&__row.#primary_key);
                     }
                 };
             }
